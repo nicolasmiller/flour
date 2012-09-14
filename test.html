@@ -1,11 +1,26 @@
-<!doctype html>
 <html>
 	<head>
 		<meta charset="UTF-8">
 		<title>
+            test
 		</title>
+        <link data-src="test.scm"></link>
 	</head>
 	<body>
+        <input type="file" id="file" multiple>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+        <script>
+            $('#file').change(function() {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    console.log(this.result);
+                };
+                reader.onerror = function(e) {
+                    console.log(e);
+                };
+                reader.readAsText($(this).get(0).files[0]);
+            });
+        </script>
 		<script src="flour.js"></script>
 	</body>
 </html>
