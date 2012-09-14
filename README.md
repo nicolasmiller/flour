@@ -1,4 +1,4 @@
 flour
 =========
 
-All I'm claiming for now: experiments with interpretation. The true idea will be revealed in time.
+Experiments with parsing and interpretation. The true idea will reveal itself in time.
