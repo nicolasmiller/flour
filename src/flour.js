@@ -1,10 +1,62 @@
 var Flour = (function() {
-    var global = {};
+    var global_env = {
+        // define some builtins here...
+        'version': 'ALL_TOO_ALPHA',
+        'global_env': true,
+        '+' : function () {
+            var result = 0,
+                i = 0;
+            for( ; i < arguments.length; i++) {
+                if(typeof arguments[i] !== 'number') {
+                    throw "Non-numeric argument";
+                }
+                result += arguments[i];
+            }
+            return result;
+        } 
+    };
 
     function is_atom(blob) {
         return !Array.isArray(blob);
     }
-    
+
+    function is_null(blob) {
+        return blob === [];
+    }
+
+    function is_special(atom) {
+        return eval_special(atom) !== undefined;
+    }
+
+    function eval_special(syntax) {
+        var keyword_defs = { 
+            'define': function (name, value) {
+                if(global_env[name] === undefined) {
+                    global_env[name] = value;
+                }
+                else {
+                    throw name + " cannot be redefined";
+                }
+             },
+            'lambda': function (args, body) {
+             },
+            'if': function(bool, then_clause, else_clase) {
+            },
+            'cond': function(list_of_cases) {
+            }   
+        };
+        return keyword_defs[syntax];
+    }
+
+    function is_special(atom) {
+        return eval_special(atom) !== undefined;
+    }
+
+    function eval_identifier(identifier) {
+        // yeah this needs to be fleshed out.. 
+        return global_env[identifier];
+    }
+
     function eval_atom(atom) {
         if(is_number(atom)) {
             return number(atom);
@@ -15,35 +67,46 @@ var Flour = (function() {
         else if(is_boolean(atom)) {
             return bool(atom);
         }
-        else if(is_syntax(atom)) {
-            eval_syntax(atom);
+        else if(is_special(atom)) {
+            return eval_special(atom);
         }
         else {
-            eval_identifier(atom);
+            // think about how indentifier will be resolved in nested scopes
+            var result = eval_identifier(atom);
+            if(result === undefined) {
+                throw atom + " is undefined";
+            }
+            return result;
         }
     };
 
     function map_in_place(arr, func) {
         var i = 0;
+
+        if(arr.length === undefined) {
+            throw "Argument length undefined"
+        }
+
         for( ; i < arr.length; i++) {
             arr[i] = func(arr[i]);
         }
     }
 
-    function eval(tree) {
-        map_in_place(tree, function() {
-            if(is_atom(tree[i])) {
-                return eval_atom(tree[i]);
+    function f_eval(tree) {
+        map_in_place(tree, function(item) {
+            if(is_atom(item)) {
+                return eval_atom(item);
             }
             else {
-                return apply(tree[i]);
+                return f_apply(item);
             }
         });
-    }; 
+    } 
 
-    function apply(s_exp) {
-        map_in_place(s_exp, function() {
-            return eval(s_exp[i]);
+    function f_apply(s_exp) {
+        var i = 0;
+        map_in_place(s_exp, function(item) {
+            return f_eval(item);
         });
         s_exp[0].apply(null, s_exp.slice(1)); 
     }
@@ -102,17 +165,12 @@ var Flour = (function() {
         }      
     }
 
-    function is_special(atom) {
-        var keywords = { 
-            'define': true,
-            'lambda': true,
-            'if': true,
-            'cond': true    
-        };
-        return keywords[atom] !== undefined;
-    }
+    
 
     function tokenize(text) {
+        // this is really limited and dependent on whitespace for now
+        // racket apparently does something more clever.. look into it
+
         var whitespace = new RegExp("\\s+"),
             parens = new RegExp('(\\(|\\))'),
             split_on_wspace =  text.split(whitespace),
@@ -173,7 +231,10 @@ var Flour = (function() {
         number: number,
         is_boolean: is_boolean,
         bool: bool,
-        is_special: is_special
+        is_special: is_special,
+        map_in_place: map_in_place,
+        f_eval: f_eval,
+        f_apply: f_apply
     };
 
     return exported;
