@@ -14,7 +14,61 @@ var Flour = (function() {
                 result += arguments[i];
             }
             return result;
-        } 
+        }, 
+        '-' : function () {
+            var result,
+                i = 0;
+            if(arguments.length < 1) {
+                throw "Requires at least one argument";
+            }
+            if(arguments.length === 1) {
+                result *= -1 * arguments[0];
+            }
+            result = arguments[0];
+            i++;
+            for( ; i < arguments.length; i++) {
+                if(typeof arguments[i] !== 'number') {
+                    throw "Non-numeric argument";
+                }
+                result -= arguments[i];
+            }
+            return result;
+        },
+        '*' : function () {
+            if(arguments.length < 1) {
+                throw "Requires at least one argument";
+            }
+            var result = 1,
+                i = 0;
+            for( ; i < arguments.length; i++) {
+                if(typeof arguments[i] !== 'number') {
+                    throw "Non-numeric argument";
+                }
+                result *= arguments[i];
+            }
+            return result;
+        },
+        '/' : function () {
+            var i = 0,
+                result = 1;
+
+            if(arguments.length < 1) {
+                throw "Requires at least one argument";
+            }
+
+            if(arguments.lenght > 1) {
+                result = arguments[i];
+                i++;
+            }
+
+            for( ; i < arguments.length; i++) {
+                if(typeof arguments[i] !== 'number') {
+                    throw "Non-numeric argument";
+                }
+                result /= arguments[i];
+            }
+            return result;
+        }
     };
 
     function is_atom(blob) {

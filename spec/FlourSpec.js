@@ -7,6 +7,8 @@ describe("Flour", function() {
         + "\nbar"
         + "\n(+ foo bar)";
 
+    var arithmetic_expression = '(* 2 (+ 12 (/ 100 2 (* 2 1)) (- 52 (+ 1 1 23))))';
+
     var yin_yang = '(let* ((yin'
         + '\n((lambda (cc) (display "@") cc) (call-with-current-continuation (lambda (c) c))))'
         + '\n(yang'
@@ -294,6 +296,8 @@ describe("Flour", function() {
     });
 
     describe('f_eval', function() {
+        var exp = [['*', '2', ['+', '12', [ '/', '100', '2', ['*', '2', '1']], ['-', '52', ['+', '1', '1', '23']]]]];
+
         it("returns the value of a function application", function () {
             expect(Flour.f_eval(['+', '2', '3', '5'])).toBe(10);
         });
@@ -308,6 +312,16 @@ describe("Flour", function() {
 
         it("returns the value of a nested function application", function () {
             expect(Flour.f_eval(['+', ['+', '1', ['+', '2', '3']], ['+', '4', '5']])).toBe(15);
+        });
+
+        it("returns the value of a nested function application", function () {
+            expect(Flour.f_eval(exp)).toBe(128);
+        });
+    });
+
+    describe('eval', function() {
+        it("evaluates an arithmetic scheme expression", function () {
+            expect(Flour.eval(arithmetic_expression)).toBe(128);
         });
     });
 });
