@@ -292,4 +292,22 @@ describe("Flour", function() {
             expect(function() {Flour.eval_atom('replicant')}).toThrow();
         });
     });
+
+    describe('f_eval', function() {
+        it("returns the value of a function application", function () {
+            expect(Flour.f_eval(['+', '2', '3', '5'])).toBe(10);
+        });
+        
+        it("returns the value of a function application", function () {
+            expect(Flour.f_eval(['+', '10', '20', '30', '50', '60', '100'])).toBe(270);
+        });
+
+        it("returns the value of a function application without args if the function supports it", function () {
+            expect(Flour.f_eval(['+'])).toBe(0);
+        });
+
+        it("returns the value of a nested function application", function () {
+            expect(Flour.f_eval(['+', ['+', '1', ['+', '2', '3']], ['+', '4', '5']])).toBe(15);
+        });
+    });
 });

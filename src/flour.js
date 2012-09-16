@@ -3,6 +3,7 @@ var Flour = (function() {
         // define some builtins here...
         'version': 'ALL_TOO_ALPHA',
         'global_env': true,
+        'foo': true,
         '+' : function () {
             var result = 0,
                 i = 0;
@@ -59,19 +60,24 @@ var Flour = (function() {
 
     function eval_atom(atom) {
         if(is_number(atom)) {
+            console.log('is number');
             return number(atom);
         }
         else if(is_string_literal(atom)) {
+            console.log('is string literal');
             return string_literal(atom);
         }
         else if(is_boolean(atom)) {
+            console.log('is boolean');
             return bool(atom);
         }
         else if(is_special(atom)) {
+            console.log('is special');
             return eval_special(atom);
         }
         else {
             // think about how indentifier will be resolved in nested scopes
+            console.log('is identifier');
             var result = eval_identifier(atom);
             if(result === undefined) {
                 throw atom + " is undefined";
@@ -93,26 +99,31 @@ var Flour = (function() {
     }
 
     function f_eval(tree) {
+        var result;
         map_in_place(tree, function(item) {
             if(is_atom(item)) {
-                return eval_atom(item);
+                result = eval_atom(item);
+                return result;
             }
             else {
-                return f_apply(item);
+                return f_eval(item);
             }
         });
+        return f_apply(tree);
     } 
 
     function f_apply(s_exp) {
-        var i = 0;
-        map_in_place(s_exp, function(item) {
-            return f_eval(item);
-        });
-        s_exp[0].apply(null, s_exp.slice(1)); 
+        console.log(typeof s_exp[0]);
+        console.log(s_exp);
+
+        console.log(typeof s_exp.slice(1));
+        console.log(s_exp.slice(1));
+
+        return s_exp[0].apply(null, s_exp.slice(1)); 
     }
 
     function is_string_literal(atom) {
-         try {
+        try {
             string_literal(atom);
             return true;
         }
@@ -189,7 +200,10 @@ var Flour = (function() {
 
     function treeify(tokens) {
         var tree = [],
-            i = 0;
+            i = 0,
+            opening = 0,
+            subtree = [];
+
         for( ; i < tokens.length; i++) {
             if(tokens[i] === '(') {
                 opening = 1;
