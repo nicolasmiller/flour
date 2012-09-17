@@ -279,6 +279,7 @@ var Flour = (function() {
     }
 
     function f_eval(tree) {
+        console.log("f_eval: " + tree);
         var result;
         map_in_place(tree, function(item) {
             if(is_atom(item)) {
@@ -293,6 +294,7 @@ var Flour = (function() {
     } 
 
     function f_apply(s_exp) {
+        console.log("f_apply: " + s_exp);
         return s_exp[0].apply(null, s_exp.slice(1)); 
     }
 
@@ -407,6 +409,7 @@ var Flour = (function() {
 
     var exported = {
         eval: function(text) {
+            /*
             var i = 0;
             var list_of_exps = treeify(tokenize(text));
             console.log(list_of_exps);
@@ -414,6 +417,10 @@ var Flour = (function() {
                 // blah.. should this print?
                 f_eval(list_of_exps[i]);
             }
+            */
+            var foo = f_eval(treeify(tokenize(text))[0]);
+            console.log("eval: " + foo);
+            return foo;
         },
         treeify: treeify,
         tokenize: tokenize,

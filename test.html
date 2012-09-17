@@ -4,45 +4,46 @@
 		<title>
             test
 		</title>
-        <link data-src="test.scm"></link>
 	</head>
 	<body>
-        <input type="file" id="file" multiple>
         <textarea id="console" rows="30" cols="80"></textarea>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script src="src/flour.js"></script>
         <script>
-            (function($) {
-                function filter(arr, pred) {
-                    var i = 0;
-                    for(;i < arr.length; i++) {
+            var f_repl = (function($) {
+                var textarea = $('#console');
+                var f_prompt = "> ";
+
+                textarea.keyup(function(e) {
+                    var code = (e.keyCode ? e.keyCode : e.which);
+                    if(code === 13) {
+                        append(Flour.eval(get_input_line()));
+                        print_prompt(true);
                     }
+                });
+
+                textarea.focus();
+
+                function get_input_line() {
+                    return textarea.val().slice(textarea.val().lastIndexOf('>') + 1).trim();
                 }
 
-                var f_console = {
-                    elem : $('#console'),
-                    append : function(text) {
-                        var elem = this.elem;
-                        if(elem.val().length > 0) {
-                            elem.val(elem.val() + '\n' + text);
-                        }
-                        else {
-                            elem.val(text);
-                        }
-                    }
-                };
+                function append(text) {
+                    textarea.val(textarea.val() + text);
+                }
 
-                $('#file').change(function() {
-                    var reader = new FileReader();
-                    reader.onloadend = function() {
-                        f_console.append(Flour.eval(this.result));
-                    };
-                    reader.onerror = function(e) {
-                        f_console.append(e.message);
-                    };
-                    reader.readAsText($(this).get(0).files[0]);
-                });
+                function print_prompt(newline) {
+                    append((newline ? '\n' : '') + f_prompt);
+                }
+
+                return {
+                    print_prompt: print_prompt
+                };
             })(jQuery);
+
+            $(document).ready(function() {
+                f_repl.print_prompt(false); 
+            });
         </script>
 	</body>
 </html>
