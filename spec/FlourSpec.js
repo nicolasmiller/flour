@@ -296,32 +296,194 @@ describe("Flour", function() {
     });
 
     describe('f_eval', function() {
-        var exp = [['*', '2', ['+', '12', [ '/', '100', '2', ['*', '2', '1']], ['-', '52', ['+', '1', '1', '23']]]]];
+        var exp = ['*', '2', ['+', '12', [ '/', '100', '2', ['*', '2', '1']], ['-', '52', ['+', '1', '1', '23']]]];
 
-        it("returns the value of a function application", function () {
-            expect(Flour.f_eval(['+', '2', '3', '5'])).toBe(10);
-        });
-        
-        it("returns the value of a function application", function () {
-            expect(Flour.f_eval(['+', '10', '20', '30', '50', '60', '100'])).toBe(270);
+        describe('arithmetic', function() {
+            describe('+', function() {
+                it("returns 0 for no args", function () {
+                    expect(Flour.f_eval(['+'])).toBe(0);
+                });
+
+                it("supports n args", function () {
+                    expect(Flour.f_eval(['+', '10', '20', '30', '50', '60', '100'])).toBe(270);
+                });
+
+                it("supports negative literals", function () {
+                    expect(Flour.f_eval(['+', '10', '-10'])).toBe(0);
+                });
+            });
+
+            describe('*', function() {
+                it("returns 1 for no args", function () {
+                    expect(Flour.f_eval(['*'])).toBe(1);
+                });
+
+                it("supports n args", function () {
+                    expect(Flour.f_eval(['*', '2', '2', '2', '2', '2'])).toBe(32);
+                });
+
+                it("returns arg * 1 for one arg and supports negative literals", function () {
+                    expect(Flour.f_eval(['*', '-10'])).toBe(-10);
+                });
+            });
+
+            describe('-', function() {
+                it("requires at least one argument", function () {
+                    expect(function() {Flour.f_eval(['-'])}).toThrow();;
+                });
+
+                it("negates a single argument", function () {
+                    expect(Flour.f_eval(['-', '100'])).toBe(-100);
+                });
+
+                it("supports n args", function () {
+                    expect(Flour.f_eval(['-', '100', '20', '30', '10', '40'])).toBe(0);
+                });
+
+                it("supports negative literals", function () {
+                    expect(Flour.f_eval(['-', '10', '-10'])).toBe(20);
+                });
+            });
+
+            describe('/', function() {
+                it("requires at least one argument", function () {
+                    expect(function() {Flour.f_eval(['/'])}).toThrow();
+                });
+                
+                it("returns the reciprocal of a single arg ", function () {
+                    expect(Flour.f_eval(['/', '100'])).toBe(0.01);
+                });
+
+                it("supports n args", function () {
+                    expect(Flour.f_eval(['/', '100', '2', '2', '5'])).toBe(5);
+                });
+            });
+
+            describe('zero?', function() {
+                it("returns true for 0", function () {
+                    expect(Flour.f_eval(['zero?', '0'])).toBe(true);
+                });
+
+                it("returns true for 0.0", function () {
+                    expect(Flour.f_eval(['zero?', '0.0'])).toBe(true);
+                });
+
+                it("returns false for a non-zero arg", function () {
+                    expect(Flour.f_eval(['zero?', '42'])).toBe(false);
+                });
+            });
+
+            describe('odd?', function() {
+                it("returns true for odd arg", function () {
+                    expect(Flour.f_eval(['odd?', '1'])).toBe(true);
+                });
+
+                it("returns false for even arg", function () {
+                    expect(Flour.f_eval(['odd?', '2'])).toBe(false);
+                });
+            });
+
+            describe('even?', function() {
+                it("returns true for even arg", function () {
+                    expect(Flour.f_eval(['even?', '2'])).toBe(true);
+                });
+
+                it("returns false for odd arg", function () {
+                    expect(Flour.f_eval(['even?', '1'])).toBe(false);
+                });
+            });
+
+            describe('max', function() {
+                it("returns max of n args", function () {
+                    expect(Flour.f_eval(['max', '-2', '0', '42', '5'])).toBe(42);
+                });
+            });
+
+            describe('min', function() {
+                it("returns min of n args", function () {
+                    expect(Flour.f_eval(['min', '-2', '0', '42', '5'])).toBe(-2);
+                });
+            });
+
+            describe('<', function() {
+                it("throws with less than 2 args", function () {
+                    expect(function() {Flour.f_eval(['<', '0'])}).toThrow();
+                });
+
+                it("returns true if first arg is less than rest of args", function () {
+                    expect(Flour.f_eval(['<', '0', '1', '2', '3', '4'])).toBe(true);
+                });
+
+                it("returns false if first arg is not less than rest of args", function () {
+                    expect(Flour.f_eval(['<', '42', '40', '42', '23', '12'])).toBe(false);
+                });
+            });
+
+            describe('<=', function() {
+                it("throws with less than 2 args", function () {
+                    expect(function() {Flour.f_eval(['<=', '0'])}).toThrow();
+                });
+
+                it("returns true if first arg is less than or equal to rest of args", function () {
+                    expect(Flour.f_eval(['<=', '0', '1', '0', '3', '4'])).toBe(true);
+                });
+
+                it("returns false if first arg is not less than or equal to  rest of args", function () {
+                    expect(Flour.f_eval(['<=', '42', '40', '42', '74', '12'])).toBe(false);
+                });
+            });
+
+            describe('>', function() {
+                it("throws with less than 2 args", function () {
+                    expect(function() {Flour.f_eval(['>', '0'])}).toThrow();
+                });
+
+                it("returns true if first arg is greater than rest of args", function () {
+                    expect(Flour.f_eval(['>', '100', '1', '0', '3', '4'])).toBe(true);
+                });
+
+                it("returns false if first arg is not greater than to  rest of args", function () {
+                    expect(Flour.f_eval(['<=', '42', '40', '42', '74', '12'])).toBe(false);
+                });
+            });
+
+            describe('>=', function() {
+                it("throws with less than 2 args", function () {
+                    expect(function() {Flour.f_eval(['>=', '0'])}).toThrow();
+                });
+
+                it("returns true if first arg is greater than or equal to rest of args", function () {
+                    expect(Flour.f_eval(['>=', '100', '1', '100', '3', '4'])).toBe(true);
+                });
+
+                it("returns false if first arg is not greater than or equal to rest of args", function () {
+                    expect(Flour.f_eval(['>=', '42', '40', '42', '74', '12'])).toBe(false);
+                });
+            });
+
+            it("supports nested arithmetic functions", function () {
+                expect(Flour.f_eval(exp)).toBe(128);
+            });
         });
 
-        it("returns the value of a function application without args if the function supports it", function () {
-            expect(Flour.f_eval(['+'])).toBe(0);
-        });
+        describe('special forms', function() {
+            describe('if', function() {
+                it("if cond true, evaluates true clause", function () {
+                   // expect(Flour.f_eval(['if', '-2', '0', '42', '5'])).toBe(-2);
+                });
 
-        it("returns the value of a nested function application", function () {
-            expect(Flour.f_eval(['+', ['+', '1', ['+', '2', '3']], ['+', '4', '5']])).toBe(15);
-        });
-
-        it("returns the value of a nested function application", function () {
-            expect(Flour.f_eval(exp)).toBe(128);
+                it("if cond false, evaluates true clause", function () {
+                  // expect(Flour.f_eval(['min', '-2', '0', '42', '5'])).toBe(-2);
+                });
+            });
         });
     });
 
     describe('eval', function() {
+        /*
         it("evaluates an arithmetic scheme expression", function () {
             expect(Flour.eval(arithmetic_expression)).toBe(128);
         });
+        */
     });
 });
