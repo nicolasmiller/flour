@@ -259,6 +259,7 @@ var Flour = (function() {
         else {
             // think about how indentifier will be resolved in nested scopes
             var result = eval_identifier(atom);
+            console.log('indentifier: ' + result);
             if(result === undefined) {
                 throw atom + " is undefined";
             }
@@ -281,8 +282,15 @@ var Flour = (function() {
     function f_eval(tree) {
         console.log("f_eval: " + tree);
         var result;
+        var special = false;
+
+        // hmm, this is messed up.. refactor
         map_in_place(tree, function(item) {
+            if(special) {
+                return item;
+            }
             if(is_atom(item)) {
+                special = is_special(item);
                 result = eval_atom(item);
                 return result;
             }
@@ -290,7 +298,13 @@ var Flour = (function() {
                 return f_eval(item);
             }
         });
-        return f_apply(tree);
+
+        if(typeof tree[0] === 'function') {
+            return f_apply(tree);
+        }
+        else {
+            return result;
+        }
     } 
 
     function f_apply(s_exp) {
