@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>
+            test
+		</title>
+	</head>
+	<body>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+		<script src="Environment.js"></script>
+        <script>
+            $(document).ready(function() {
+                /*
+                var env = new Environment3();
+                env.set("answer", 42);
+                env.set("god", 7);
+                env.set(4, 5);
+                env.set("some_func", function() {
+                    console.log(this);
+                    var that = env;
+                    console.log(that["god"] + that["answer"]);
+                });
+                env.set("nested_env", new Environment3());
+                env.get("nested_env").set("a_nested_value", 47);
+                env.get("nested_env").set("some_nested_function", function() {
+                    console.log(this);
+                    var that = env.get("nested_env");
+                    console.log(that["a_nested_value"]);
+                });
+
+                console.log(env.get("answer"));
+                console.log(env.get("god"));
+                console.log(env.get(4));
+                console.log(env);
+                env.get("some_func")();
+                env.get("nested_env").get("some_nested_function")();
+                */
+
+                var env = {};
+                env["answer"] = 42;
+                env["god"] = 7;
+                env[4] = 5;
+                env["some_func"] = function() {
+                    console.log(this);
+                };
+                env["nested_env"] = {};
+                env["nested_env"]["nested_value"] = 47; 
+                env["nested_env"]["nested_func"] = function() {
+                    console.log(this);
+                }; 
+
+                console.log(env["answer"]);
+                console.log(env["god"]);
+                console.log(env[4]);
+                console.log(env);
+                console.log(env["some_func"]());
+                console.log(env["nested_env"]["nested_func"]());
+            });
+        </script>
+	</body>
+</html>

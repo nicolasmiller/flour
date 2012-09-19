@@ -9,6 +9,8 @@ var Flour = (function() {
     }
 
     function die_if_non_numeric(x) {
+        console.log(x);
+        console.log(typeof x);
         if(typeof x !== 'number') {
             throw "Non-numeric argument";
         }
@@ -206,19 +208,26 @@ var Flour = (function() {
         var keyword_defs = { 
             'define': function (name, value) {
                 if(global_env[name] === undefined) {
-                    global_env[name] = value;
+                    global_env[name] = f_eval(value);
                 }
                 else {
                     throw name + " cannot be redefined";
                 }
              },
             'lambda': function (args, body) {
-
+                // hmmm? keep pondering.
+                // not going to cheat
+                console.log(args);  
+                console.log(body);  
+                    return function() {
+                        return f_eval(body);
+                    }
              },
-            'if': function(bool, then_clause, else_clase) {
+            'if': function(bool, then_clause, else_clause) {
                 var cond = f_eval(bool);
+
                 // check to see what the spec allows in a conditional 
-                if(cond !== true || cond !== false) {
+                if(!(cond === true || cond === false)) {
                     throw "Non-boolean conditional value: " + cond;
                 }
                 if(cond) {
@@ -284,10 +293,14 @@ var Flour = (function() {
         var result;
         var special = false;
 
+        if(is_atom(tree)) {
+            return eval_atom(tree);
+        }
+
         // hmm, this is messed up.. refactor
         map_in_place(tree, function(item) {
             if(special) {
-                return item;
+                return item; // don't immediately evaluate special form args
             }
             if(is_atom(item)) {
                 special = is_special(item);
@@ -351,6 +364,7 @@ var Flour = (function() {
     }
 
     function is_boolean(atom) {
+        console.log("is_boolean: " + atom);
         return atom === '#t' || atom === '#f';
     }
 
@@ -433,7 +447,7 @@ var Flour = (function() {
             }
             */
             var foo = f_eval(treeify(tokenize(text))[0]);
-            console.log("eval: " + foo);
+            console.log(foo);
             return foo;
         },
         treeify: treeify,
