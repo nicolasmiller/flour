@@ -22,11 +22,18 @@ var Flour = (function() {
         }
     }
 
-    function die_if_lt_n_args(args, n) {
+    function require_at_least(n, args) {
         if(args.length < n) {
             throw "Requires at least" + n + "argument(s)";
         }
     }
+
+    function require_exactly(n, args) {
+        if(args.length < n) {
+            throw "Requires at least" + n + "argument(s)";
+        }
+    }
+
 
     var arithmetic = {
         '+': function () {
@@ -42,7 +49,7 @@ var Flour = (function() {
             var result,
                 i = 0;
 
-            die_if_zero_args(arguments);
+            require_at_least(1, arguments);
 
             if(arguments.length === 1) {
                 return -1 * arguments[0];
@@ -73,7 +80,7 @@ var Flour = (function() {
             var i = 0,
                 result = 1;
 
-            die_if_zero_args(arguments);
+            require_at_least(1, arguments);
 
             if(arguments.length > 1) {
                 result = arguments[i];
@@ -106,7 +113,8 @@ var Flour = (function() {
             var i = 1,
                 max = arguments[0];
 
-            die_if_zero_args(arguments);
+            require_at_least(1, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(arguments[i] > max) {
                     max = arguments[i];
@@ -118,7 +126,8 @@ var Flour = (function() {
             var i = 1,
                 min = arguments[0];
 
-            die_if_zero_args(arguments);
+            require_at_least(1, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(arguments[i] < min) {
                     min = arguments[i];
@@ -129,7 +138,9 @@ var Flour = (function() {
         '<': function() {
             var first = arguments[0],
                 i = 1;
-            die_if_lt_n_args(arguments, 2);
+
+            require_at_least(2, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(!(first < arguments[i])) {
                     return false;
@@ -140,7 +151,9 @@ var Flour = (function() {
         '<=': function() {
             var first = arguments[0],
                 i = 1;
-            die_if_lt_n_args(arguments, 2);
+
+            require_at_least(2, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(!(first <= arguments[i])) {
                     return false;
@@ -152,7 +165,9 @@ var Flour = (function() {
             console.log('wtf');
             var first = arguments[0],
                 i = 1;
-            die_if_lt_n_args(arguments, 2);
+
+            require_at_least(2, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(!(first > arguments[i])) {
                     return false;
@@ -163,7 +178,9 @@ var Flour = (function() {
         '>=': function() {
             var first = arguments[0],
                 i = 1;
-            die_if_lt_n_args(arguments, 2);
+
+            require_at_least(2, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(!(first >= arguments[i])) {
                     return false;
@@ -174,7 +191,9 @@ var Flour = (function() {
         '=': function() {
             var first = arguments[0],
                 i = 1;
-            die_if_lt_n_args(arguments, 2);
+
+            require_at_least(2, arguments);
+
             for( ; i < arguments.length; i++) {
                 if(first !== arguments[i]) {
                     return false;
@@ -182,6 +201,26 @@ var Flour = (function() {
             } 
             return true;
         }
+    };
+
+    var construct = {
+        Pair: function(left, right) {
+            this.left = left;
+            this.right = right;
+            this.car = function() {
+                return this.left;
+            };
+            this.cdr = function() {
+                return this.right;
+            };
+        },
+
+    };
+
+    var type_predicates = {
+        'pair?': function () {
+            require
+         }
     };
 
     var global_env = {

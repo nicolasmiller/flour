@@ -26,3 +26,7 @@ var Pair = function(left, right) {
         return this.right;
     };
 };
+
+var F_Boolean = function(value) {
+    this.value = value;
+};

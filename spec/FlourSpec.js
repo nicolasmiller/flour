@@ -479,6 +479,80 @@ describe("Flour", function() {
                 });
             });
         });
+
+        describe('types', function() {
+            describe('boolean?', function() {
+                it("returns true for a boolean argument", function () {
+                });
+
+                it("returns false for a non-boolean argument", function () {
+                });
+            });
+
+            describe('symbol?', function() {
+                it("returns true for a symbol argument", function () {
+                });
+
+                it("returns false for a non-symbol argument", function () {
+                });
+            });
+
+            describe('char?', function() {
+                it("returns true for a char argument", function () {
+                });
+
+                it("returns false for a non-char argument", function () {
+                });
+            });
+
+            describe('vector?', function() {
+                it("returns true for a vector argument", function () {
+                });
+
+                it("returns false for a non-vector argument", function () {
+                });
+            });
+
+            describe('procedure?', function() {
+                it("returns true for a procedure argument", function () {
+                });
+
+                it("returns false for a non-procedure argument", function () {
+                });
+            });
+
+            describe('pair?', function() {
+                it("returns true for a pair argument", function () {
+                });
+
+                it("returns false for a non-pair argument", function () {
+                });
+            });
+
+            describe('number?', function() {
+                it("returns true for a number argument", function () {
+                });
+
+                it("returns false for a non-number argument", function () {
+                });
+            });
+
+            describe('string?', function() {
+                it("returns true for a string argument", function () {
+                });
+
+                it("returns false for a non-string argument", function () {
+                });
+            });
+
+            describe('port?', function() {
+                it("returns true for a port argument", function () {
+                });
+
+                it("returns false for a non-port argument", function () {
+                });
+            });
+        });
     });
 
     describe('eval', function() {
