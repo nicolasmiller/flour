@@ -9,8 +9,8 @@ var Flour = (function() {
     }
 
     function die_if_non_numeric(x) {
-        console.log(x);
-        console.log(typeof x);
+        //console.log(x);
+        //console.log(typeof x);
         if(typeof x !== 'number') {
             throw "Non-numeric argument";
         }
@@ -127,44 +127,56 @@ var Flour = (function() {
             return min;
         },
         '<': function() {
-            var first = arguments[0];
-            var i = 1;
+            var first = arguments[0],
+                i = 1;
             die_if_lt_n_args(arguments, 2);
-            for( ; i < arguments[i]; i++) {
-                if(!(arguments[i] < first)) {
+            for( ; i < arguments.length; i++) {
+                if(!(first < arguments[i])) {
                     return false;
                 }  
             } 
             return true;
         },
         '<=': function() {
-            var first = arguments[0];
-            var i = 1;
+            var first = arguments[0],
+                i = 1;
             die_if_lt_n_args(arguments, 2);
-            for( ; i < arguments[i]; i++) {
-                if(!(arguments[i] <= first)) {
+            for( ; i < arguments.length; i++) {
+                if(!(first <= arguments[i])) {
                     return false;
                 }  
             } 
             return true;
         },
-        '>': function() {
-            var first = arguments[0];
-            var i = 1;
+        'gt': function() {
+            console.log('wtf');
+            var first = arguments[0],
+                i = 1;
             die_if_lt_n_args(arguments, 2);
-            for( ; i < arguments[i]; i++) {
-                if(!(arguments[i] > first)) {
+            for( ; i < arguments.length; i++) {
+                if(!(first > arguments[i])) {
                     return false;
                 }  
             } 
             return true;
         },
         '>=': function() {
-            var first = arguments[0];
-            var i = 1;
+            var first = arguments[0],
+                i = 1;
             die_if_lt_n_args(arguments, 2);
-            for( ; i < arguments[i]; i++) {
-                if(!(arguments[i] >= first)) {
+            for( ; i < arguments.length; i++) {
+                if(!(first >= arguments[i])) {
+                    return false;
+                }  
+            } 
+            return true;
+        },
+        '=': function() {
+            var first = arguments[0],
+                i = 1;
+            die_if_lt_n_args(arguments, 2);
+            for( ; i < arguments.length; i++) {
+                if(first !== arguments[i]) {
                     return false;
                 }  
             } 
@@ -182,8 +194,9 @@ var Flour = (function() {
         '/': arithmetic['/'],
         '<': arithmetic['<'],
         '<=': arithmetic['<='],
-        '>': arithmetic['>'],
+        'gt': arithmetic['gt'],
         '>=': arithmetic['>='],
+        '=': arithmetic['='],
         'zero?': arithmetic['zero?'],
         'positive?': arithmetic['positive?'],
         'odd?': arithmetic['odd?'],
@@ -217,11 +230,18 @@ var Flour = (function() {
             'lambda': function (args, body) {
                 // hmmm? keep pondering.
                 // not going to cheat
-                console.log(args);  
-                console.log(body);  
-                    return function() {
-                        return f_eval(body);
+                //console.log(args);  
+                //console.log(body);  
+                return function() {
+                    var i = 0;
+                    var local_env = {};
+                    for( ; i < arguments.length; i++) {
+                        local_env[args[i]] = arguments[i];
                     }
+                    console.log(body);
+                    //console.log(local_env);
+                    return f_eval(body, local_env);
+                }
              },
             'if': function(bool, then_clause, else_clause) {
                 var cond = f_eval(bool);
@@ -247,12 +267,16 @@ var Flour = (function() {
         return eval_special(atom) !== undefined;
     }
 
-    function eval_identifier(identifier) {
-        // yeah this needs to be fleshed out.. 
-        return global_env[identifier];
+    function eval_identifier(identifier, local_env) {
+        if(local_env !== undefined && local_env[identifier] !== undefined) {
+            return local_env[identifier];
+        }
+        else {
+            return global_env[identifier];
+        }
     }
 
-    function eval_atom(atom) {
+    function eval_atom(atom, local_env) {
         if(is_number(atom)) {
             return number(atom);
         }
@@ -263,12 +287,12 @@ var Flour = (function() {
             return bool(atom);
         }
         else if(is_special(atom)) {
-            return eval_special(atom);
+            return eval_special(atom, local_env);
         }
         else {
             // think about how indentifier will be resolved in nested scopes
-            var result = eval_identifier(atom);
-            console.log('indentifier: ' + result);
+            var result = eval_identifier(atom, local_env);
+            //console.log('indentifier: ' + result);
             if(result === undefined) {
                 throw atom + " is undefined";
             }
@@ -288,32 +312,49 @@ var Flour = (function() {
         }
     }
 
-    function f_eval(tree) {
+    function map(arr, func) {
+        var i = 0;
+        var result = [];
+
+        if(arr.length === undefined) {
+            throw "Argument length undefined"
+        }
+
+        for( ; i < arr.length; i++) {
+            result.push(func(arr[i]));
+        }
+
+        return result;
+    }
+
+    function f_eval(tree, local_env) {
         console.log("f_eval: " + tree);
         var result;
         var special = false;
+        var evaled_tree;
 
         if(is_atom(tree)) {
-            return eval_atom(tree);
+            return eval_atom(tree, local_env);
         }
 
-        // hmm, this is messed up.. refactor
-        map_in_place(tree, function(item) {
+        evaled_tree = map(tree, function(item) {
+            console.log("map: " + item);
             if(special) {
+                console.log("special: " + item);
                 return item; // don't immediately evaluate special form args
             }
             if(is_atom(item)) {
                 special = is_special(item);
-                result = eval_atom(item);
+                result = eval_atom(item, local_env);
                 return result;
             }
             else {
-                return f_eval(item);
+                return f_eval(item, local_env);
             }
         });
 
-        if(typeof tree[0] === 'function') {
-            return f_apply(tree);
+        if(typeof evaled_tree[0] === 'function') {
+            return f_apply(evaled_tree);
         }
         else {
             return result;
@@ -321,7 +362,7 @@ var Flour = (function() {
     } 
 
     function f_apply(s_exp) {
-        console.log("f_apply: " + s_exp);
+        //console.log("f_apply: " + s_exp);
         return s_exp[0].apply(null, s_exp.slice(1)); 
     }
 
@@ -364,7 +405,7 @@ var Flour = (function() {
     }
 
     function is_boolean(atom) {
-        console.log("is_boolean: " + atom);
+        //console.log("is_boolean: " + atom);
         return atom === '#t' || atom === '#f';
     }
 
@@ -447,7 +488,7 @@ var Flour = (function() {
             }
             */
             var foo = f_eval(treeify(tokenize(text))[0]);
-            console.log(foo);
+            //console.log(foo);
             return foo;
         },
         treeify: treeify,
