@@ -596,6 +596,8 @@ describe("Flour", function() {
                 });
 
                 describe('cdr', function() {
+                    // got a problem here:
+                    // need to clarify the distinction between proper pairs and lists
                     it('returns the right element of a pair', function() {
                         expect(Flour.f_eval(['cdr', ['cons', '1', '2']])).toBe(2);
                     });

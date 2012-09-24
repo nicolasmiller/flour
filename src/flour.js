@@ -591,6 +591,20 @@ var Flour = (function() {
         return tree;
     }
 
+    function repr(value) {
+        var i = 0;
+        if(!is_atom(value)) {
+            for( ; i < value.length; i++) {
+                value[i] = repr(value[i]);    
+            }
+            return "(" + value.toString().split(',').join(', ') + ")";
+        }
+        else if(typeof value === 'string') {
+            return '"' + value + '"';
+        }
+        return value;
+    }
+
     var exported = {
         eval: function(text) {
             /*
@@ -602,9 +616,12 @@ var Flour = (function() {
                 f_eval(list_of_exps[i]);
             }
             */
-            var evaled = f_eval(treeify(tokenize(text))[0]);
-            //console.log(evaled);
-            return evaled;
+            try {
+                return repr(f_eval(treeify(tokenize(text))[0]));
+            }
+            catch(err) {
+                return err;
+            }
         },
         treeify: treeify,
         tokenize: tokenize,
