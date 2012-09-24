@@ -204,7 +204,20 @@ var Flour = (function() {
     };
 
     var construct = {
-        Pair: function(left, right) {
+        FBoolean: function(value) {
+		    this.value = value;
+		},
+		Symbol: function(value) {
+			this.value = value;
+		},
+		Char: function(value) {
+			this.value = value;
+		},
+       	Vector: function() {
+		},
+		Procedure: function() {
+		},
+		Pair: function(left, right) {
             this.left = left;
             this.right = right;
             this.car = function() {
@@ -214,13 +227,43 @@ var Flour = (function() {
                 return this.right;
             };
         },
-
+		FNumber: function(value) {
+			this.value = value;
+		},
+		FString: function(value) {
+			this.value = value;
+		},
+		Port: function(value) {
+			this.value = value;
+		}
     };
 
     var type_predicates = {
+	    is_of_type: function(constructor) {
+			require_exactly(1, arguments);
+			return arguments[0].constructor === constructor;	
+		},
+		'boolean?': function () {
+			this.is_of_type(construct.FBoolean);
+         },
+        'symbol?': function () {
+			this.is_of_type(construct.Symbol);
+         },
+        'char?': function () {
+			this.is_of_type(construct.Char);
+         },
+        'vector?': function () {
+			this.is_of_type(construct.Vector);
+         },
+        'procedure?': function () {
+			this.is_of_type(construct.Procedure);
+         },
         'pair?': function () {
-            require
-         }
+			this.is_of_type(construct.Pair);
+         },
+        'number?': function () {
+			this.is_of_type(construct.Pair);
+         },
     };
 
     var global_env = {

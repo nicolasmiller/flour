@@ -483,9 +483,12 @@ describe("Flour", function() {
         describe('types', function() {
             describe('boolean?', function() {
                 it("returns true for a boolean argument", function () {
+                    expect(Flour.f_eval(['boolean?', '#t'])).toBe(true);
+                    expect(Flour.f_eval(['boolean?', '#f'])).toBe(false);
                 });
 
                 it("returns false for a non-boolean argument", function () {
+                    expect(Flour.f_eval(['boolean?', '1234'])).toBe(false);
                 });
             });
 
