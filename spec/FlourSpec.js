@@ -287,7 +287,7 @@ describe("Flour", function() {
 
         it("returns a value for an identifier", function () {
             expect(typeof Flour.eval_atom('+')).toBe('function');
-            expect(Flour.eval_atom('global_env')).toBe(true);
+            expect(Flour.eval_atom('foo')).toBe(true);
         });
 
         it("throws an exception for an undefined identifier", function () {
@@ -471,11 +471,21 @@ describe("Flour", function() {
         describe('special forms', function() {
             describe('if', function() {
                 it("if cond true, evaluates true clause", function () {
-                   // expect(Flour.f_eval(['if', '-2', '0', '42', '5'])).toBe(-2);
+                    expect(Flour.f_eval(['if', '#t', '1', '0'])).toBe(1);
                 });
 
                 it("if cond false, evaluates true clause", function () {
-                  // expect(Flour.f_eval(['min', '-2', '0', '42', '5'])).toBe(-2);
+                    expect(Flour.f_eval(['if', '#f', '1', '0'])).toBe(0);
+                });
+            });
+
+            describe('quote', function() {
+                it("returns an unevaluated representation of the argument", function () {
+                    expect(Flour.f_eval(['quote', '42'])).toBe('42');
+                    expect(Flour.f_eval(['quote', '#t'])).toBe('#t');
+                    expect(Flour.f_eval(['quote', '"foo"'])).toBe('"foo"');
+                    expect(Flour.f_eval(['quote', ['lambda', ['x'], ['+', 'x', '1']]]))
+                        .toEqual(['lambda', ['x'], ['+', 'x', '1']]);
                 });
             });
         });
@@ -484,7 +494,7 @@ describe("Flour", function() {
             describe('boolean?', function() {
                 it("returns true for a boolean argument", function () {
                     expect(Flour.f_eval(['boolean?', '#t'])).toBe(true);
-                    expect(Flour.f_eval(['boolean?', '#f'])).toBe(false);
+                    expect(Flour.f_eval(['boolean?', '#f'])).toBe(true);
                 });
 
                 it("returns false for a non-boolean argument", function () {
@@ -518,17 +528,94 @@ describe("Flour", function() {
 
             describe('procedure?', function() {
                 it("returns true for a procedure argument", function () {
+                    expect(Flour.f_eval(['procedure?', 'boolean?'])).toBe(true);
+                    expect(Flour.f_eval(['procedure?', 'procedure?'])).toBe(true); // nerd giggle
+                    expect(Flour.f_eval(['procedure?', ['lambda', ['x']]])).toBe(true);
                 });
 
                 it("returns false for a non-procedure argument", function () {
+                    expect(Flour.f_eval(['procedure?', '#t'])).toBe(false);
+                    expect(Flour.f_eval(['procedure?', '1234'])).toBe(false);
                 });
             });
 
             describe('pair?', function() {
                 it("returns true for a pair argument", function () {
+                    expect(Flour.f_eval(['pair?', ['cons', '1', '2']])).toBe(true);
+                });
+
+                it("returns true for a list argument", function () {
+                    expect(Flour.f_eval(['pair?', ['list', '1', '2', '3', '4']])).toBe(true);
+                    expect(Flour.f_eval(['pair?', ['quote', ['1', '2', '3', '4']]])).toBe(true);
+                });
+                
+                describe('list', function() {
+                    it('returns a list composed of its arguments evaluated', function() {
+                        expect(Flour.f_eval(['list', '1', '2', '3', '4'])).toEqual([1, 2, 3, 4]);
+                    });
+                });
+
+                describe('cons', function() {
+                    it('for two atom args it returns the corresponding pair', function() {
+                        expect(Flour.f_eval(['cons', '1', '2'])).toEqual([1, 2]);
+                        expect(Flour.f_eval(['pair?', ['cons', '1', '2']])).toEqual(true);
+                    });
+
+                    it('appends an atom onto the front of a list', function() {
+                        expect(Flour.f_eval(['cons', '0', ['list', '1', '2']])).toEqual([0, 1, 2]);
+                        expect(Flour.f_eval(['pair?', ['cons', '0', ['list', '1', '2']]])).toBe(true);
+                    });
+
+                    it('appends a list onto the front of a list', function() {
+                        expect(Flour.f_eval(['cons', ['list', '1', '2'], ['list', '1', '2']])).toEqual([[1, 2], 1, 2]);
+                    });
+
+                    it('throws an exception for not exactly two arguments', function() {
+                        expect(function() { Flour.f_eval(['cons'])}).toThrow();
+                        //expect(function() { Flour.f_eval(['cons', '1', '2', '3'])}).toThrow();
+                    });
+                });
+                
+                describe('car', function() {
+                    it('returns the left element of a pair', function() {
+                        expect(Flour.f_eval(['car', ['cons', '1', '2']])).toBe(1);
+                    });
+
+                    it('returns the first element of a list', function() {
+                        expect(Flour.f_eval(['car', ['list', '1', '2', '3', '4']])).toBe(1);
+                    });
+
+                    it('throws an exception for a non-list argument', function() {
+                        expect(function() { Flour.f_eval(['car', '1'])}).toThrow();
+                    });
+
+                    it('throws an exception for not exactly one argument', function() {
+                        expect(function() { Flour.f_eval(['car'])}).toThrow();
+                        expect(function() { Flour.f_eval(['car', '1', '2', '3'])}).toThrow();
+                    });
+                });
+
+                describe('cdr', function() {
+                    it('returns the right element of a pair', function() {
+                        expect(Flour.f_eval(['cdr', ['cons', '1', '2']])).toBe(2);
+                    });
+
+                    it('returns the rest of the list (a list without the first element)', function() {
+                        expect(Flour.f_eval(['cdr', ['list', '1', '2', '3', '4']])).toEqual([2, 3, 4]);
+                    });
+
+                    it('throws an exception for a non-list argument', function() {
+                        expect(function() { Flour.f_eval(['cdr', '1'])}).toThrow();
+                    });
+
+                    it('throws an exception for not exactly one argument', function() {
+                        expect(function() { Flour.f_eval(['cdr'])}).toThrow();
+                        expect(function() { Flour.f_eval(['cdr', '1', '2', '3'])}).toThrow();
+                    });
                 });
 
                 it("returns false for a non-pair argument", function () {
+
                 });
             });
 
