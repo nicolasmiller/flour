@@ -557,7 +557,7 @@ describe("Flour", function() {
 
                 describe('cons', function() {
                     it('for two atom args it returns the corresponding pair', function() {
-                        expect(Flour.f_eval(['cons', '1', '2'])).toEqual([1, 2]);
+                        expect(Flour.f_eval(['cons', '1', '2'])).toEqual({left: 1, right:2});
                         expect(Flour.f_eval(['pair?', ['cons', '1', '2']])).toEqual(true);
                     });
 

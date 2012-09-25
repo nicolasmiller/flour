@@ -9,8 +9,6 @@ var Flour = (function() {
     }
 
     function die_if_non_numeric(x) {
-        //console.log(x);
-        //console.log(typeof x);
         if(typeof x !== 'number') {
             throw "Non-numeric argument";
         }
@@ -22,9 +20,9 @@ var Flour = (function() {
         }
     }
     
-    function die_if_not_list(arg) {
+    function die_if_atom(arg) {
         if(is_atom(arg)) {
-            throw "Expected list argument";
+            throw "Expected non-atom argument";
         }
     }
 
@@ -43,29 +41,40 @@ var Flour = (function() {
     var data = {
         'cons': function() {
             require_exactly(2, arguments);
-            if(is_atom(arguments[1])) {
-                return [arguments[0], arguments[1]]; 
+            var left = arguments[0],
+                right = arguments[1];
+
+            if(is_atom(right)) {
+                return new Pair(left, right);
             }
             else {
-                var head = [arguments[0]];
-                return head.concat(arguments[1]);
+                var head = [left];
+                if(right instanceof Pair) {
+                    return head.concat([right]);
+                }
+                return head.concat(right);
             }
          },
          'car': function() {
             require_exactly(1, arguments);
-            die_if_not_list(arguments[0]);
+            die_if_atom(arguments[0]);
+            if(arguments[0] instanceof Pair) {
+                return arguments[0].left;
+            }
             return arguments[0][0];
          },
          'cdr': function() {
             require_exactly(1, arguments);
-            die_if_not_list(arguments[0]);
+            die_if_atom(arguments[0]);
+            if(arguments[0] instanceof Pair) {
+                return arguments[0].right;
+            }
             return arguments[0].slice(1);
          }
     };
 
     var arithmetic = {
         '+': function () {
-            //console.log(this);
             var result = 0,
                 i = 0;
             for( ; i < arguments.length; i++) {
@@ -232,63 +241,59 @@ var Flour = (function() {
         }
     };
 
-    var construct = {
-        FBoolean: Boolean,
-		Symbol: function(value) {
-			this.value = value;
-		},
-		Char: function(value) {
-			this.value = value;
-		},
-       	Vector: function() {
-		},
-		Procedure: Function,
-		Pair: function(left, right) {
-            return [left, right];
-        },
-		FNumber: Number, 
-		FString: function(value) {
-			this.value = value;
-		},
-		Port: function(value) {
-			this.value = value;
-		},
-        List: function() {
-            var list = [];
-            var i = 0;
-            for( ; i < arguments.length; i++) {
-                list.push(arguments[i]);
-            }
-            return list;
+    function List() {
+        var list = [];
+        var i = 0;
+        for( ; i < arguments.length; i++) {
+            list.push(arguments[i]);
         }
-    };
+        return list;
+    }
+
+    function Pair(left, right) {
+        this.left = left;
+        this.right = right;
+    } 
+
+    function Symbol() {
+    }
+
+    function Char() {
+    }
+
+    function Vector() {
+    }
+
+    function has_constructor(constructor, args) {
+	    require_exactly(1, args);
+		return args[0].constructor === constructor;	
+    }
 
     var type_predicates = {
-	    'is_of_type': function(args, constructor) {
-			require_exactly(1, args);
-			return args[0].constructor === constructor;	
-		},
-		'boolean?': function () {
-			return global_env.is_of_type(arguments, construct.FBoolean);
+		'boolean?': function() {
+			return has_constructor(Boolean, arguments);
          },
-        'symbol?': function () {
-			return global_env.is_of_type(arguments, construct.Symbol);
+        'symbol?': function() {
+			return has_constructor(Symbol, arguments);
          },
-        'char?': function () {
-			return global_env.is_of_type(arguments, construct.Char);
+        'char?': function() {
+			return has_constructor(Char, arguments);
          },
-        'vector?': function () {
-			return global_env.is_of_type(arguments, construct.Vector);
+        'vector?': function() {
+			return has_constructor(Vector, arguments);
          },
-        'procedure?': function () {
-			return global_env.is_of_type(arguments, construct.Procedure);
+        'procedure?': function() {
+			return has_constructor(Function, arguments);
          },
-        'pair?': function () {
+        'pair?': function() {
 			require_exactly(1, arguments);
-			return !is_atom(arguments[0]); 
+			return !is_atom(arguments[0]) || (arguments[0] instanceof Pair); 
          },
-        'number?': function () {
-			return global_env.is_of_type(arguments, construct.FNumber);
+         'non_list_pair?': function() {
+             return has_constructor(Pair, arguments);
+         },
+        'number?': function() {
+            return has_constructor(Number, arguments);
          }
     };
 
@@ -317,11 +322,11 @@ var Flour = (function() {
         'cons': data['cons'],
         'car': data['car'],
         'cdr': data['cdr'],
-        'list': construct['List']
+        'list': List
     };
 
     function is_atom(blob) {
-        return !Array.isArray(blob);
+        return !Array.isArray(blob) && !(blob instanceof Pair);
     }
 
     function is_null(blob) {
@@ -403,9 +408,7 @@ var Flour = (function() {
             return eval_special(atom, local_env);
         }
         else {
-            // think about how indentifier will be resolved in nested scopes
             var result = eval_identifier(atom, local_env);
-            //console.log('indentifier: ' + result);
             if(result === undefined) {
                 throw atom + " is undefined";
             }
@@ -441,7 +444,6 @@ var Flour = (function() {
     }
 
     function f_eval(tree, local_env) {
-        //console.log("f_eval: " + tree);
         var result;
         var special = false;
         var evaled_tree;
@@ -451,9 +453,7 @@ var Flour = (function() {
         }
 
         evaled_tree = map(tree, function(item) {
-            //console.log("map: " + item);
             if(special) {
-                //console.log("special: " + item);
                 return item; // don't immediately evaluate special form args
             }
             if(is_atom(item)) {
@@ -467,9 +467,7 @@ var Flour = (function() {
         });
 
         if(typeof evaled_tree[0] === 'function') {
-            var asdf = f_apply(evaled_tree, local_env);
-            //console.log("f_apply: " + asdf);
-            return asdf;
+            return f_apply(evaled_tree, local_env);
         }
         else {
             return result;
@@ -477,7 +475,6 @@ var Flour = (function() {
     } 
 
     function f_apply(s_exp, local_env) {
-        //console.log(s_exp);
         return s_exp[0].apply(local_env || global_env, s_exp.slice(1)); 
     }
 
@@ -520,7 +517,6 @@ var Flour = (function() {
     }
 
     function is_boolean(atom) {
-        //console.log("is_boolean: " + atom);
         return atom === '#t' || atom === '#f';
     }
 
@@ -594,6 +590,10 @@ var Flour = (function() {
     function repr(value) {
         var i = 0;
         if(!is_atom(value)) {
+            if(value instanceof Pair) {
+                return "(" + value.left + " . " + value.right + ")";
+            }
+
             for( ; i < value.length; i++) {
                 value[i] = repr(value[i]);    
             }
