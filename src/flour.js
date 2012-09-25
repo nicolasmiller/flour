@@ -337,7 +337,7 @@ var Flour = (function() {
         return eval_special(atom) !== undefined;
     }
 
-    function eval_special(syntax) {
+    function eval_special(syntax, local_env) {
         var keyword_defs = { 
             'define': function (name, value) {
                 if(global_env[name] === undefined) {
@@ -358,17 +358,17 @@ var Flour = (function() {
                 }
              },
             'if': function(bool, then_clause, else_clause) {
-                var cond = f_eval(bool);
+                var cond = f_eval(bool, local_env);
 
                 // check to see what the spec allows in a conditional 
                 if(!(cond === true || cond === false)) {
                     throw "Non-boolean conditional value: " + cond;
                 }
                 if(cond) {
-                    return f_eval(then_clause);
+                    return f_eval(then_clause, local_env);
                 }
                 else {
-                    return f_eval(else_clause);
+                    return f_eval(else_clause, local_env);
                 }
             },
             'cond': function(list_of_cases) {
