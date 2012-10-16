@@ -1,4 +1,4 @@
 flour
 =========
 
-Experiments with parsing and interpretation. The true idea will reveal itself in time.
+A Scheme interpreter in Javascript just for kicks. A work in progress.
